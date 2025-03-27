@@ -15,7 +15,7 @@ module.exports = function lastfm(database, config) {
         const album = args[2];
         if (!album || !artist) {
             result = `Album o Artista non trovati!`
-            ctx.reply(result, {parse_mode: "MarkdownV2"});
+            ctx.reply(result, {parse_mode: "Markdown"});
             return;
         }
         const users = await database.getUsers();
@@ -45,19 +45,19 @@ module.exports = function lastfm(database, config) {
 
             const formattedResult = userScrobbles.map((user, index) => `${index + 1}. ${user.username} ・ **${user.playcount}** plays\n`);
             result += `**[${album}](${results[0].album.url})**\n\n${formattedResult.slice(0, 10).join("")}`
-            ctx.reply(result, { parse_mode: "MarkdownV2" });
+            ctx.reply(result, { parse_mode: "Markdown" });
         }
         catch (err) {
             console.error("handleWhoknowsAlbum: " + err);
             result = `Errore durante il wka!`;
-            ctx.reply(result, {parse_mode: "MarkdownV2"});
+            ctx.reply(result, {parse_mode: "Markdown"});
         }
     }
     async function handleWhoknowsArtist(ctx, result, args) {
         const artist = args[1];
         if (!artist) {
             result += (`Artista non trovato!`)
-            ctx.reply(result, {parse_mode: "MarkdownV2"});
+            ctx.reply(result, {parse_mode: "Markdown"});
             return;
         }
         const users = await database.getUsers();
@@ -85,12 +85,12 @@ module.exports = function lastfm(database, config) {
 
             const formattedResult = userScrobbles.map((user, index) => `${index + 1}. ${user.username} ・ **${user.playcount}** plays\n`);
             result += `**[${artist}](${results[0].artist.url})**\n\n${formattedResult.slice(0, 10).join("")}`
-            ctx.reply(result, { parse_mode: "MarkdownV2" });
+            ctx.reply(result, { parse_mode: "Markdown" });
         }
         catch (err) {
             console.error("handleWhoknowsArtist: " + err);
             result = `Errore durante il wk!`;
-            ctx.reply(result, {parse_mode: "MarkdownV2"});
+            ctx.reply(result, {parse_mode: "Markdown"});
         }
     }
     async function handleWhoknowsTrack(ctx, result, args) {
@@ -98,7 +98,7 @@ module.exports = function lastfm(database, config) {
         const track = args[2];
         if (!track || !artist) {
             result = `Canzone o Artista non trovati!`;
-            ctx.reply(result, {parse_mode: "MarkdownV2"});
+            ctx.reply(result, {parse_mode: "Markdown"});
             return;
         }
         const users = await database.getUsers();
@@ -128,12 +128,12 @@ module.exports = function lastfm(database, config) {
 
             const formattedResult = userScrobbles.map((user, index) => `${index + 1}. ${user.username} ・ **${user.playcount}** plays\n`);
             result += `**[${track}](${results[0].track.url})**\n\n${formattedResult.slice(0, 10).join("")}`
-            ctx.reply(result, { parse_mode: "MarkdownV2" });
+            ctx.reply(result, { parse_mode: "Markdown" });
         }
         catch (err) {
             console.error("handleWhoknowsTrack: " + err);
             result = `Errore durante il wkt!`
-            ctx.reply(result, {parse_mode: "MarkdownV2"});
+            ctx.reply(result, {parse_mode: "Markdown"});
         }
     }
     async function handleTopArtist(period, top, iuser) {
@@ -174,8 +174,8 @@ module.exports = function lastfm(database, config) {
 
 **⚠️ Legenda:**
 **(**xxx**)** ➜ Parametro opzionale
-**[**xxx**]** ➜ Parametro obbligatorio
-[xxx **|** yyy **|** zzz] ➜ Parametro obbligatorio da scegliere tra le opzioni`, { parse_mode: "MarkdownV2" });
+**\\[**xxx**\]** ➜ Parametro obbligatorio
+\\[xxx **|** yyy **|** zzz\] ➜ Parametro obbligatorio da scegliere tra le opzioni`, { parse_mode: "Markdown" });
         },
         login: async function (ctx) {
             //console.log(ctx);
@@ -202,16 +202,16 @@ module.exports = function lastfm(database, config) {
 
                 ctx.reply(`Autorizza il bot al tuo account Last.Fm per il completo utilizzo delle sue funzionalità!
 [Clicca questo link](https://www.last.fm/api/auth?api_key=${config.token_lastfm}&token=${token})
-Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
+Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "Markdown" });
 
             } catch (error) {
                 console.error('Errore durante l\'ottenimento del token: /login ' + error);
-                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`, {parse_mode: "MarkdownV2"});
+                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`, {parse_mode: "Markdown"});
             }
         },
         login_finish: async function (ctx) {
             const dbUser = await database.getUser(ctx.message.chat.username);
-            if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!", {parse_mode: "MarkdownV2"})
+            if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!", {parse_mode: "Markdown"})
 
             try {
                 const apiSig = createApiSign({ api_key: config.token_lastfm, method: method, token: dbUser.token });
@@ -230,9 +230,9 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                 dbUser.session_key = session.key;
                 dbUser.username = session.name;
                 await database.updateUser(dbUser).catch(console.error);
-                await ctx.reply(`Registrazione completata con successo!`, {parse_mode: "MarkdownV2"});
+                await ctx.reply(`Registrazione completata con successo!`, {parse_mode: "Markdown"});
             } catch (error) {
-                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`, {parse_mode: "MarkdownV2"});
+                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`, {parse_mode: "Markdown"});
                 console.error('Errore durante l\'ottenimento della sessione in lastfm login finish: ' + error);
             }
         },
@@ -242,7 +242,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
             const iuser = username ?? ctx.message.chat.username;
 
             const dbUser = await database.getUser(iuser);
-            if (!dbUser) return await ctx.reply(`${iuser} non è loggato!`, {parse_mode: "MarkdownV2"});
+            if (!dbUser) return await ctx.reply(`${iuser} non è loggato!`, {parse_mode: "Markdown"});
 
             const apiSig = createApiSign({ api_key: config.token_lastfm, method: "user.getrecenttracks", user: dbUser.username });
             try {
@@ -266,7 +266,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
             }
             catch (e) {
                 console.error("user: " + e);
-                ctx.reply(`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`, {parse_mode: "MarkdownV2"});
+                ctx.reply(`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`, {parse_mode: "Markdown"});
             }
         },
         whoknows: async function (ctx) {
@@ -284,7 +284,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                     break;
                 default:
                     result = `Errore durante l'ottenimento del tipo!`
-                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    ctx.reply(result, {parse_mode: "Markdown"});
                     return;
             }
         },
@@ -305,7 +305,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                     break;
                 default:
                     result = `Errore durante l'ottenimento del tipo!`
-                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    ctx.reply(result, {parse_mode: "Markdown"});
                     return;
             }
             switch (args[1]) {
@@ -323,14 +323,14 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                     break;
                 default:
                     result = `Errore durante l'ottenimento del periodo!`
-                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    ctx.reply(result, {parse_mode: "Markdown"});
                     return;
             }
             const iuser = args[2] ?? ctx.message.chat.username;
             const dbUser = await database.getUser(iuser);
             if (!dbUser) {
                 result = `${iuser} non è loggato!`
-                ctx.reply(result), {parse_mode: "MarkdownV2"};
+                ctx.reply(result), {parse_mode: "Markdown"};
                 return;
             }
             const apiSig = createApiSign({ api_key: config.token_lastfm, method: method, user: dbUser.username, period: period });
@@ -363,16 +363,16 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                 }
                 else {
                     result = `Errore durante la acquisizione del metodo!`
-                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    ctx.reply(result, {parse_mode: "Markdown"});
                     return;
                 }
 
-                ctx.reply(result, {parse_mode: "MarkdownV2"})
+                ctx.reply(desc, {parse_mode: "Markdown"})
             }
             catch (e) {
                 console.error(e);
                 result=`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`
-                ctx.reply(result, {parse_mode: "MarkdownV2"});
+                ctx.reply(result, {parse_mode: "Markdown"});
             }
         }
     }
