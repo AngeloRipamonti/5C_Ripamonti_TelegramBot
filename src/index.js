@@ -6,6 +6,7 @@ const db = require("./database.js");
 const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'config.json'), "utf-8"));
 const bot = new Telegraf(config.telegramKey);
 const lastfm = require("./lastfm.js");
+
 async function main() {
     const database = await db();
     const fmbot = lastfm(database, config);
@@ -30,8 +31,9 @@ async function main() {
         await fmbot.whoknows(ctx);
     });
 
-
-
+    bot.command("top", async function (ctx) {
+        await fmbot.top(ctx);
+    });
 
     bot.launch()
 

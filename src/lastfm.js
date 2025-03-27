@@ -9,12 +9,13 @@ module.exports = function lastfm(database, config) {
         const hash = crypto.createHash('md5').update(paramString + config.secret_lastfm).digest('hex');
         return hash;
     }
+
     async function handleWhoknowsAlbum(ctx, result, args) {
         const artist = args[1];
         const album = args[2];
         if (!album || !artist) {
             result = `Album o Artista non trovati!`
-            ctx.reply(result);
+            ctx.reply(result, {parse_mode: "MarkdownV2"});
             return;
         }
         const users = await database.getUsers();
@@ -49,14 +50,14 @@ module.exports = function lastfm(database, config) {
         catch (err) {
             console.error("handleWhoknowsAlbum: " + err);
             result = `Errore durante il wka!`;
-            ctx.reply(result);
+            ctx.reply(result, {parse_mode: "MarkdownV2"});
         }
     }
     async function handleWhoknowsArtist(ctx, result, args) {
         const artist = args[1];
         if (!artist) {
             result += (`Artista non trovato!`)
-            ctx.reply(result);
+            ctx.reply(result, {parse_mode: "MarkdownV2"});
             return;
         }
         const users = await database.getUsers();
@@ -89,7 +90,7 @@ module.exports = function lastfm(database, config) {
         catch (err) {
             console.error("handleWhoknowsArtist: " + err);
             result = `Errore durante il wk!`;
-            ctx.reply(result);
+            ctx.reply(result, {parse_mode: "MarkdownV2"});
         }
     }
     async function handleWhoknowsTrack(ctx, result, args) {
@@ -97,7 +98,7 @@ module.exports = function lastfm(database, config) {
         const track = args[2];
         if (!track || !artist) {
             result = `Canzone o Artista non trovati!`;
-            ctx.reply(result);
+            ctx.reply(result, {parse_mode: "MarkdownV2"});
             return;
         }
         const users = await database.getUsers();
@@ -132,8 +133,32 @@ module.exports = function lastfm(database, config) {
         catch (err) {
             console.error("handleWhoknowsTrack: " + err);
             result = `Errore durante il wkt!`
-            ctx.reply(result);
+            ctx.reply(result, {parse_mode: "MarkdownV2"});
         }
+    }
+    async function handleTopArtist(period, top, iuser) {
+        let desc = `**Top artisti ${period} di ${iuser}**\n\n`;
+        top.forEach((element, index) => {
+            if (index > 9) return;
+            desc += `${index + 1}. **[${element.name}](${element.url})** ・ *${element.playcount} plays*\n`;
+        });
+        return desc;
+    }
+    async function handleTopAlbum(period, top, iuser) {
+        let desc = `**Top album ${period} di ${iuser}**\n\n`;
+        top.forEach((element, index) => {
+            if (index > 9) return;
+            desc += `${index + 1}. **[${element.name}](${element.url})** ・ *${element.playcount} plays*\n`;
+        });
+        return desc;
+    }
+    async function handleTopTrack(period, top, iuser) {
+        let desc = `**Top canzoni ${period} di ${iuser}**\n\n`;
+        top.forEach((element, index) => {
+            if (index > 9) return;
+            desc += `${index + 1}. **[${element.name}](${element.url})** ・ *${element.playcount} plays*\n`;
+        });
+        return desc;
     }
 
     return {
@@ -181,12 +206,12 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
 
             } catch (error) {
                 console.error('Errore durante l\'ottenimento del token: /login ' + error);
-                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`);
+                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`, {parse_mode: "MarkdownV2"});
             }
         },
         login_finish: async function (ctx) {
             const dbUser = await database.getUser(ctx.message.chat.username);
-            if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!")
+            if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!", {parse_mode: "MarkdownV2"})
 
             try {
                 const apiSig = createApiSign({ api_key: config.token_lastfm, method: method, token: dbUser.token });
@@ -205,9 +230,9 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                 dbUser.session_key = session.key;
                 dbUser.username = session.name;
                 await database.updateUser(dbUser).catch(console.error);
-                await ctx.reply(`Registrazione completata con successo!`);
+                await ctx.reply(`Registrazione completata con successo!`, {parse_mode: "MarkdownV2"});
             } catch (error) {
-                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`);
+                ctx.reply(`Errore durante l'ottenimento della sessione! Rifare l'intero procedimento da capo!`, {parse_mode: "MarkdownV2"});
                 console.error('Errore durante l\'ottenimento della sessione in lastfm login finish: ' + error);
             }
         },
@@ -217,7 +242,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
             const iuser = username ?? ctx.message.chat.username;
 
             const dbUser = await database.getUser(iuser);
-            if (!dbUser) return await ctx.reply(`${iuser} non è loggato!`);
+            if (!dbUser) return await ctx.reply(`${iuser} non è loggato!`, {parse_mode: "MarkdownV2"});
 
             const apiSig = createApiSign({ api_key: config.token_lastfm, method: "user.getrecenttracks", user: dbUser.username });
             try {
@@ -241,7 +266,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
             }
             catch (e) {
                 console.error("user: " + e);
-                ctx.reply(`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`);
+                ctx.reply(`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`, {parse_mode: "MarkdownV2"});
             }
         },
         whoknows: async function (ctx) {
@@ -259,8 +284,95 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2" });
                     break;
                 default:
                     result = `Errore durante l'ottenimento del tipo!`
-                    ctx.reply(result);
+                    ctx.reply(result, {parse_mode: "MarkdownV2"});
                     return;
+            }
+        },
+        top: async function (ctx) {
+            const args = ctx.message.text.split(" ").slice(1);
+            const result = "";
+            let method;
+            let period;
+            switch (args[0]) {
+                case 'artist':
+                    method = `user.gettopartists`;
+                    break;
+                case 'album':
+                    method = `user.gettopalbums`;
+                    break;
+                case 'track':
+                    method = `user.gettoptracks`;
+                    break;
+                default:
+                    result = `Errore durante l'ottenimento del tipo!`
+                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    return;
+            }
+            switch (args[1]) {
+                case 'weekly':
+                    period = "7day";
+                    break;
+                case 'monthly':
+                    period = "1month";
+                    break;
+                case 'annual':
+                    period = "12month";
+                    break;
+                case 'alltime':
+                    period = "overall";
+                    break;
+                default:
+                    result = `Errore durante l'ottenimento del periodo!`
+                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    return;
+            }
+            const iuser = args[2] ?? ctx.message.chat.username;
+            const dbUser = await database.getUser(iuser);
+            if (!dbUser) {
+                result = `${iuser} non è loggato!`
+                ctx.reply(result), {parse_mode: "MarkdownV2"};
+                return;
+            }
+            const apiSig = createApiSign({ api_key: config.token_lastfm, method: method, user: dbUser.username, period: period });
+
+            try {
+
+                const params = new URLSearchParams({
+                    method: method,
+                        user: dbUser.username,
+                        period: period,
+                        api_key: config.token_lastfm,
+                        api_sig: apiSig,
+                        format: 'json'
+                    
+                });
+                const response = await fetch(`http://ws.audioscrobbler.com/2.0/?${params.toString()}`);
+                const top = await response.json();
+
+                period = period === "overall" ? "di sempre" : period === "12month" ? "di quest'anno" : period === "1month" ? "di questo mese" : period === "7day" ? "di questa settimana" : period;
+                let desc;
+
+                if (method.includes("artists")) {
+                    desc = await handleTopArtist(period, top.topartists.artist, iuser);
+                }
+                else if (method.includes("albums")) {
+                    desc = await handleTopAlbum(period, top.topalbums.album, iuser);
+                }
+                else if (method.includes("tracks")) {
+                    desc = await handleTopTrack(period, top.toptracks.track, iuser);
+                }
+                else {
+                    result = `Errore durante la acquisizione del metodo!`
+                    ctx.reply(result, {parse_mode: "MarkdownV2"});
+                    return;
+                }
+
+                ctx.reply(result, {parse_mode: "MarkdownV2"})
+            }
+            catch (e) {
+                console.error(e);
+                result=`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`
+                ctx.reply(result, {parse_mode: "MarkdownV2"});
             }
         }
     }
