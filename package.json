@@ -2,7 +2,7 @@
   "name": "telegrambot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +11,7 @@
   "dependencies": {
     "crypto": "^1.0.1",
     "fs": "^0.0.1-security",
+    "node-fetch": "^2.7.0",
     "path": "^0.12.7",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
