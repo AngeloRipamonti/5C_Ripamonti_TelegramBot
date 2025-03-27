@@ -180,7 +180,7 @@ module.exports = function lastfm(database, config) {
         login: async function (ctx) {
             //console.log(ctx);
 
-            await database.delete(ctx.message.chat.username).catch(console.error);
+            await database.deleteUser(ctx.message.chat.username).catch(console.error);
 
             let token;
             try {
@@ -214,7 +214,7 @@ Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "Markdown" });
             if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!", {parse_mode: "Markdown"})
 
             try {
-                const apiSig = createApiSign({ api_key: config.token_lastfm, method: method, token: dbUser.token });
+                const apiSig = createApiSign({ api_key: config.token_lastfm, method: "auth.getSession", token: dbUser.token });
 
                 const params = new URLSearchParams({
                     method: 'auth.getSession',
