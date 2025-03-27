@@ -44,9 +44,9 @@ Questo link ha una durata di massimo 60 minuti.`);
 
         const dbUser = await database.getUser(ctx.message.chat.username);
         if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!")
-        
+
         try {
-            const apiSig = createApiSig({ api_key: TOKEN_LASTFM, method: method, token: dbUser.token });
+            const apiSig = createApiSig({ api_key: config.token_lastfm, method: method, token: dbUser.token });
 
             const params = new URLSearchParams({
                 method: 'auth.getSession',
@@ -69,9 +69,35 @@ Questo link ha una durata di massimo 60 minuti.`);
         }
     });
 
+    bot.command("user", async function (ctx) {
+        const iuser = ctx.message.chat;
+        const dbUser = await database.getUser(iuser.username);
+        if (!dbUser) return await ctx.reply(`${iuser.username} non è loggato!`);
 
+        const apiSig = createApiSig({ api_key: config.last_fm, method: "user.getrecenttracks", user: dbUser.username });
+        try {
+            const params = new URLSearchParams({
+                method: "user.getrecenttracks",
+                user: dbUser.username,
+                api_key: config.token_lastfm,
+                api_sig: apiSig,
+                format: 'json'
+            });
+            const response = await fetch(`http://ws.audioscrobbler.com/2.0/?${params.toString()}`);
+            const data = await response.json();
+            const tracks = data.recenttracks.track;
 
-
+            let result = `### [${tracks[0].name}](${tracks[0].url})\n\n**${tracks[0].artist["#text"]}**・*${tracks[0].name}*\n`;
+            //(`${tracks[0].image[3]["#text"]`) immagine la inserisco?
+            //(`Ultima track di ${(iuser.username)}`) metto questa riga di intestazione?
+            // `${tracks[0].date ? tracks[0].date["#text"] : " " }` riga di footer?
+            ctx.reply(result);
+        }
+        catch (e) {
+            console.error("user: " + e);
+            ctx.reply(`Errore durante l'ottenimento dello user, verificarsi che sia loggato correttamente al servizio!`);
+        }
+    });
 
 
     bot.command('hipster', Telegraf.reply('λ'))
