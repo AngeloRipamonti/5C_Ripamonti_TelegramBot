@@ -3,10 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const db = require("./database.js");
+const createApiSign = require("./createApiSign.js");
 const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'config.json'), "utf-8"));
 const bot = new Telegraf(config.telegramKey);
 async function main() {
     const database = await db();
+    
     bot.command('login', async (ctx) => {
         //console.log(ctx);
 
@@ -32,7 +34,7 @@ async function main() {
 
             ctx.reply(`Autorizza il bot al tuo account Last.Fm per il completo utilizzo delle sue funzionalità!
 [Clicca questo link](https://www.last.fm/api/auth?api_key=${config.token_lastfm}&token=${token})
-Questo link ha una durata di massimo 60 minuti.`);
+Questo link ha una durata di massimo 60 minuti.`, { parse_mode: "MarkdownV2"});
 
         } catch (error) {
             console.error('Errore durante l\'ottenimento del token: /login ' + error);
@@ -46,7 +48,7 @@ Questo link ha una durata di massimo 60 minuti.`);
         if (!dbUser) return await ctx.reply("Prima di eseguire questo comando bisogna fare \`/login\`!")
 
         try {
-            const apiSig = createApiSig({ api_key: config.token_lastfm, method: method, token: dbUser.token });
+            const apiSig = createApiSign({ api_key: config.token_lastfm, method: method, token: dbUser.token });
 
             const params = new URLSearchParams({
                 method: 'auth.getSession',
@@ -70,11 +72,14 @@ Questo link ha una durata di massimo 60 minuti.`);
     });
 
     bot.command("user", async function (ctx) {
-        const iuser = ctx.message.chat;
-        const dbUser = await database.getUser(iuser.username);
-        if (!dbUser) return await ctx.reply(`${iuser.username} non è loggato!`);
+        const args = ctx.message.text.split(" ").slice(1); 
+        const username = args[0];     
+        const iuser =  username ?? ctx.message.chat.username;
 
-        const apiSig = createApiSig({ api_key: config.last_fm, method: "user.getrecenttracks", user: dbUser.username });
+        const dbUser = await database.getUser(iuser);
+        if (!dbUser) return await ctx.reply(`${iuser} non è loggato!`);
+
+        const apiSig = createApiSign({ api_key: config.token_lastfm, method: "user.getrecenttracks", user: dbUser.username });
         try {
             const params = new URLSearchParams({
                 method: "user.getrecenttracks",
@@ -87,11 +92,12 @@ Questo link ha una durata di massimo 60 minuti.`);
             const data = await response.json();
             const tracks = data.recenttracks.track;
 
-            let result = `### [${tracks[0].name}](${tracks[0].url})\n\n**${tracks[0].artist["#text"]}**・*${tracks[0].name}*\n`;
-            //(`${tracks[0].image[3]["#text"]`) immagine la inserisco?
-            //(`Ultima track di ${(iuser.username)}`) metto questa riga di intestazione?
-            // `${tracks[0].date ? tracks[0].date["#text"] : " " }` riga di footer?
-            ctx.reply(result);
+            let result = `<a href="https://www.last.fm/user/${dbUser.username}">Ultima track di ${iuser}</a>\n\n`;
+            result += `<b><a href="${tracks[0].url}">${tracks[0].name}</a></b>\n\n`;
+            result += `<b>${tracks[0].artist["#text"]}</b> ・ <i>${tracks[0].name}</i>\n\n`;
+            result += `<i>${tracks[0].date ? tracks[0].date["#text"] : " "}</i>`;
+
+            ctx.replyWithPhoto(tracks[0].image[3]["#text"], { caption: result, parse_mode: 'HTML' });
         }
         catch (e) {
             console.error("user: " + e);
