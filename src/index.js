@@ -1,7 +1,6 @@
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
 const db = require("./database.js");
 const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'config.json'), "utf-8"));
 const bot = new Telegraf(config.telegramKey);
@@ -9,6 +8,7 @@ const lastfm = require("./lastfm.js");
 
 async function main() {
     const database = await db();
+    await database.setup();
     const fmbot = lastfm(database, config);
 
     bot.command("start", (ctx) => {

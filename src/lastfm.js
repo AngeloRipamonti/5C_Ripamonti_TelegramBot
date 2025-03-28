@@ -1,7 +1,5 @@
 const fetch = require('node-fetch');
 const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
 
 module.exports = function lastfm(database, config) {
     function createApiSign(params) {
