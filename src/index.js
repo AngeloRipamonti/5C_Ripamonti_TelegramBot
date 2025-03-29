@@ -7,6 +7,13 @@ const bot = new Telegraf(config.telegramKey);
 const lastfm = require("./lastfm.js");
 
 async function main() {
+    bot.telegram.setMyCommands([
+        { command: `start`, description: `Avvia il bot e fornisce una guida` },
+        { command: `user`, description: `Mostra la canzone che "username" sta ascoltando!` },
+        { command: `whoknows`, description: `Mostra chi conosce 'l'artista, album o traccia' specificata! field va compilato in caso di album/track, inserendo esso.` },
+        { command: `top`, description: `Mostra i tuoi 10 migliori 'artisti, album o tracce' per un periodo di tempo specificato!` }
+    ]);
+
     const database = await db();
     await database.setup();
     const fmbot = lastfm(database, config);

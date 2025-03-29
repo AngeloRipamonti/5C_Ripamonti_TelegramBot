@@ -31,7 +31,7 @@ module.exports = async function database() {
                 user_id TEXT PRIMARY KEY,
                 token TEXT UNIQUE,
                 session_key TEXT UNIQUE,
-                username TEXT,
+                username TEXT
             );`);
             console.log("Database setup completato")
         },
